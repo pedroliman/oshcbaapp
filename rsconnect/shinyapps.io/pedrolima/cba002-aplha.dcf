@@ -1,0 +1,11 @@
+name: cba002-aplha
+title: cba0.0.2-aplha
+account: pedrolima
+server: shinyapps.io
+appId: 195668
+bundleId: 898472
+url: https://pedrolima.shinyapps.io/cba002-aplha/
+when: 1499709500.74145
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .gitattributes|.RData|Dados.xlsx|LICENSE|README.md|setup.R|teste.R|absenteismo/app.R|absenteismo/rsconnect/shinyapps.io/pedrolima/absenteismo.dcf
