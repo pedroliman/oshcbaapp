@@ -31,16 +31,40 @@ ui <- fluidPage(
                "Apos informar os dados de inputs, verifique na guia ao lado se suas informacoes foram carregadas. Caso contrario, verifique se o arquivo de dados esta correto."
              ),
              mainPanel(
+               "Abaixo serao exibidos os inputs que voce inseriu no arquivo de dados.<br>",
                tabsetPanel(
                  tabPanel("Configuracoes",
                           tableOutput("configstable")
                  ),
-                 tabPanel("Tab 2"),
-                 tabPanel("Tab 3")
+                 tabPanel("Parametros",
+                          tableOutput("parametrostable")
+                 ),
+                 tabPanel("Cenarios",
+                          tableOutput("cenariostable")
+                 ),
+                 tabPanel("Custos",
+                          tableOutput("custostable")
+                 )
                )
              )
     ),
-    tabPanel("Navbar 2",
+    tabPanel("Processamento",
+             "Esta aba apresenta resultados da simulacao. Use esta aba para observar os calculos realizados pela calculadora.",
+             mainPanel(
+             tabsetPanel(
+               tabPanel("Resultados das Simulacoes",
+                        "Mostrando primeiras 100 linhas dos resultados",
+                        tableOutput("resultados_descontadostable")
+                        ),
+               tabPanel("Resultados da Análise de Custo Beneficio",
+                        "Mostrando primeiras 100 linhas dos resultados",
+                        tableOutput("resultados_cbrtable")
+                        )
+              )
+             )
+             ),
+    tabPanel("Resultados",
+             "Esta aba apresenta resultados da simulacao. Use esta aba para verificar os dados simulados.",
              sidebarPanel(
                fileInput("file", "File input:")
              ),
@@ -54,6 +78,7 @@ ui <- fluidPage(
                )
              )
     )
+  )
   )
   # # Application title
   # titlePanel("Calculadora de Custos e Beneficios SST - V. 1.0.0"),
@@ -79,7 +104,6 @@ ui <- fluidPage(
   #     )
   #   )
   # )
-)
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
@@ -108,8 +132,6 @@ server <- function(input, output, session) {
   
   # Dados de Absenteismo simulados
   output_oshcba = reactive({
-      
-      
       inputs = CarregaDados()
       if (is.null(inputs))
         return(NULL)
@@ -132,8 +154,8 @@ server <- function(input, output, session) {
     })
   
   # Resultados Descontados
-  resultados = reactive({
-      output_oshcba()$ResultadosDescontados
+  resultados_descontados = reactive({
+      output_oshcba()$Resultados_Descontados
     })
   
   # Iniciativas Simuladas: Este código provavelmente deveria ser implementado fora do layout
@@ -162,13 +184,34 @@ server <- function(input, output, session) {
     #       main="Histograma de Despesas em Absenteismo")
   })
   
-  output$table <- renderTable({
+  output$resultadostable <- renderTable({
+    head(resultados(),n = 100)
+  })
+  
+  output$resultados_descontadostable <- renderTable({
+    head(resultados_descontados(), n = 100)
+  })
+  
+  output$resultados_cbrtable <- renderTable({
     head(resultados_cbr(),n = 100)
   })
   
   output$configstable <- renderTable({
     resultados_inputs()$Configs
   })
+  
+  output$parametrostable <- renderTable({
+    resultados_inputs()$Parametros
+  })
+  
+  output$cenariostable <- renderTable({
+    resultados_inputs()$Cenarios
+  })
+  
+  output$custostable <- renderTable({
+    resultados_inputs()$Custos
+  })
+  
   
   output$completetable <- renderTable({
     resultados_cbr()
@@ -182,6 +225,7 @@ server <- function(input, output, session) {
   )
   
 }
+
 
 # Run the application
 shinyApp(ui = ui, server = server)
