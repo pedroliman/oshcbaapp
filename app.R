@@ -4,6 +4,7 @@
 #Se precisar atualizaro app, rode este comando:
 # library(devtools)
 # install_github("pedroliman/oshcba")
+library(fitdistrplus)
 library(shiny)
 library(shinythemes)
 library(oshcba)
@@ -13,6 +14,7 @@ library(mc2d)
 library(dplyr)
 library(reshape2)
 library(purrr)
+
 
 ### Definindo uma seed fixa fora do app para ter replicações mehor comparáveis.
 set.seed(1000)
@@ -39,9 +41,6 @@ ui <- fluidPage(
                  tabPanel("Parametros",
                           tableOutput("parametrostable")
                  ),
-                 tabPanel("Cenarios",
-                          tableOutput("cenariostable")
-                 ),
                  tabPanel("Custos",
                           tableOutput("custostable")
                  )
@@ -59,51 +58,48 @@ ui <- fluidPage(
                tabPanel("Resultados da Análise de Custo Beneficio",
                         "Mostrando primeiras 100 linhas dos resultados",
                         tableOutput("resultados_cbrtable")
-                        )
+                        ),
+               tabPanel("Console",
+                        verbatimTextOutput("consoletext")
+               )
               )
              )
              ),
     tabPanel("Resultados",
              "Esta aba apresenta resultados da simulacao. Use esta aba para verificar os dados simulados.",
-             sidebarPanel(
-               fileInput("file", "File input:")
-             ),
              mainPanel(
                tabsetPanel(
-                 tabPanel("Tab 1",
-                          h4("Table")
-                 ),
-                 tabPanel("Tab 2"),
-                 tabPanel("Tab 3")
+                 tabPanel("Resultados Gerais",
+                          selectInput("Iniciativa", "Selecione a Iniciativa para exibir os Graficos",
+                                                                  c("Iniciativa1", "Iniciativa2", "Iniciativa3", "Iniciativa4", "Iniciatva5", "Iniciativa6", "Iniciativa7", "Iniciativa8", "Iniciativa9", "Iniciativa10", "TodasIniciativas")
+                                      ),
+                          fluidRow(
+                              column(6,
+                                     plotOutput("beneficioabsenteismo_plot"),
+                                     verbatimTextOutput("beneficioabsenteismo_confinttext"),
+                                     plotOutput("beneficioturnover_plot"),
+                                     verbatimTextOutput("beneficioturnover_confinttext"),
+                                     plotOutput("beneficiomultas_plot"),
+                                     verbatimTextOutput("beneficiomultas_confinttext")
+                                     ),
+                              column(6,
+                                     plotOutput("beneficioacoesregressivas_plot"),
+                                     verbatimTextOutput("beneficioacoesregressivas_confinttext"),
+                                     plotOutput("beneficiototal_plot"),
+                                     verbatimTextOutput("beneficiototal_confinttext"),
+                                     plotOutput("razaocustobeneficio_plot"),
+                                     verbatimTextOutput("razaocustobeneficio_confinttext")
+                                     )
+                            )
+
+                          # tableOutput("resultados_descontadostable")
+                 )
                )
              )
+             
     )
   )
   )
-  # # Application title
-  # titlePanel("Calculadora de Custos e Beneficios SST - V. 1.0.0"),
-  # 
-  # # Sidebar with a slider input for number of bins
-  # sidebarLayout(
-  #   sidebarPanel(
-  #     "Faca Upload de seus dados de Input",
-  #     fileInput("Dados de Input",
-  #               inputId = "DadosInput",buttonLabel = "Arquivo.xlsx")
-  #   ),
-  #   
-  #   # Show a plot of the generated distribution
-  #   mainPanel(
-  #     
-  #     tabsetPanel(
-  #       tabPanel("INpu",
-  #                selectInput("Iniciativa", "Selecione a Iniciativa para exibir os Graficos",
-  #                            c("Iniciativa1", "Iniciativa2", "Iniciativa3", "Iniciativa4", "Iniciatva5", "Iniciativa6", "Iniciativa7", "Iniciativa8", "Iniciativa9", "Iniciativa10", "TodasIniciativas")),
-  #                plotOutput("histograma_absenteismo")
-  #                ), 
-  #       tabPanel("Tabela de Resultados", tableOutput("table"), downloadButton('downloadData', 'Baixar Tabela de Resultados'))
-  #     )
-  #   )
-  # )
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
@@ -135,10 +131,12 @@ server <- function(input, output, session) {
       inputs = CarregaDados()
       if (is.null(inputs))
         return(NULL)
-      dados = simular_cba(paste(inputs$datapath, ".xlsx", sep=""), modo = "completo")
+      withProgress(message = 'Calculando...', value = 0.3, {
+        dados = simular_cba(paste(inputs$datapath, ".xlsx", sep=""), modo = "completo")
+        incProgress(1, detail = "Finalizando")
+      })
       return(dados)
     })
-  
   # Parametros
   resultados_inputs = reactive({
       output_oshcba()$Inputs
@@ -159,29 +157,52 @@ server <- function(input, output, session) {
     })
   
   # Iniciativas Simuladas: Este código provavelmente deveria ser implementado fora do layout
-  iniciativas = reactive({
-    inputs = inputs()
-    if (is.null(inputs))
-      return(NULL)
-    iniciativas = obter_cenarios(inputs) %>%
-      filter(!CenarioASIS) %>%
-      select(Cenario)
-    iniciativas = as.vector(t(iniciativas))
-    return(iniciativas)
-  })
+  # iniciativas = reactive({
+  #   inputs = inputs()
+  #   if (is.null(inputs))
+  #     return(NULL)
+  #   iniciativas = obter_cenarios(inputs) %>%
+  #     filter(!CenarioASIS) %>%
+  #     select(Cenario)
+  #   iniciativas = as.vector(t(iniciativas))
+  #   return(iniciativas)
+  # })
   
-  output$histograma_absenteismo <- renderPlot({
-    dados_simulados = resultados_cbr()
-    if (!is.null(dados_simulados))
-      dados_simulados = dados_simulados %>% filter(Cenario.y == input$Iniciativa) %>% select(Cenario.y, BeneficioAbsenteismo, BeneficioTurnover, BeneficioMultas, BeneficioAcoesRegressivasINSS
-                                                                                             , BeneficioTotalCBR, RazaoBeneficioCusto)
-      #dados_simulados = dados_simulados %>% filter(Cenario == input$Iniciativa) %>% select(Cenario, NFaltas, Nev_Afmenor15_Tipico, Nev_Afmaior15_Tipico, Nev_Safast_Tipico, Nev_Obito_Tipico, Nev_Afmenor15_Trajeto, Nev_Afmaior15_Trajeto, Nev_Safast_Trajeto, Nev_Obito_Trajeto, Nev_Afmenor15_DoenOcup, Nev_Afmaior15_DoenOcup, Nev_Safast_DoenOcup, Nev_Obito_DoenOcup, Nev_Afmenor15_NRelac, Nev_Afmaior15_NRelac, Nev_Safast_NRelac, Nev_Obito_NRelac, DespesaTurnover, NSubstituidos, DiasAbsenteismo, DespesaAbsenteismo, DespesaMultas, NumeroMultas_Lei1, DespesaAcoesRegressivasINSS, AcoesRegressivasINSS, Nev_AcaoRegressivaINSSAcumulado, Nev_AcaoRegressivaINSS)
+  # output$histogramas <- renderPlot({
+  #   dados_simulados = resultados_cbr()
+  #   if (!is.null(dados_simulados))
+  #     dados_simulados = dados_simulados %>% filter(Cenario.y == input$Iniciativa) %>% select(Cenario.y, BeneficioAbsenteismo, BeneficioTurnover, BeneficioMultas, BeneficioAcoesRegressivasINSS
+  #                                                                                            , BeneficioTotalCBR, RazaoBeneficioCusto)
+  #     #dados_simulados = dados_simulados %>% filter(Cenario == input$Iniciativa) %>% select(Cenario, NFaltas, Nev_Afmenor15_Tipico, Nev_Afmaior15_Tipico, Nev_Safast_Tipico, Nev_Obito_Tipico, Nev_Afmenor15_Trajeto, Nev_Afmaior15_Trajeto, Nev_Safast_Trajeto, Nev_Obito_Trajeto, Nev_Afmenor15_DoenOcup, Nev_Afmaior15_DoenOcup, Nev_Safast_DoenOcup, Nev_Obito_DoenOcup, Nev_Afmenor15_NRelac, Nev_Afmaior15_NRelac, Nev_Safast_NRelac, Nev_Obito_NRelac, DespesaTurnover, NSubstituidos, DiasAbsenteismo, DespesaAbsenteismo, DespesaMultas, NumeroMultas_Lei1, DespesaAcoesRegressivasINSS, AcoesRegressivasINSS, Nev_AcaoRegressivaINSSAcumulado, Nev_AcaoRegressivaINSS)
+  # 
+  #   ggplot(data = melt(dados_simulados), mapping = aes(x = value)) + 
+  #     geom_histogram(bins = 15) + facet_wrap(~variable, scales = 'free_x')
+  #   
+  #   # qplot(dados_simulados$RazaoBeneficioCusto,geom = "histogram",
+  #   #       main="Histograma de Despesas em Absenteismo")
+  # })
+  
+  
+  output$beneficioabsenteismo_plot = renderPlot({
+    dados = resultados_cbr() %>% filter(Cenario.y == input$Iniciativa) %>% select(Cenario.y, BeneficioAbsenteismo)
+    var = dplyr::pull(dados[,3])
+    title = names(dados[,3])
+    qplot(var, geom = 'blank', main=title) +   
+      geom_line(aes(y = ..density.., colour = 'Empirical'), stat = 'density') + 
+      # stat_function(fun = dnorm, aes(colour = 'Normal')) +                       
+      geom_histogram(aes(y = ..density..), alpha = 0.7) +                        
+      scale_colour_manual(name = 'Density', values = c('red', 'blue')) + 
+      theme(legend.position = c(0.85, 0.85))
+  })
 
-    ggplot(data = melt(dados_simulados), mapping = aes(x = value)) + 
-      geom_histogram(bins = 15) + facet_wrap(~variable, scales = 'free_x')
-    
-    # qplot(dados_simulados$RazaoBeneficioCusto,geom = "histogram",
-    #       main="Histograma de Despesas em Absenteismo")
+  output$beneficioabsenteismo_confinttext = renderPrint({
+    dados = resultados_cbr() %>% filter(Cenario.y == input$Iniciativa) %>% select(Cenario.y, BeneficioAbsenteismo)
+    var = dplyr::pull(dados[,3])
+    var_fit = fitdistrplus::fitdist(var,"norm")
+    var_medio = as.numeric(var_fit$estimate[["mean"]])
+    media_text = paste("Media = ", round(var_medio,2))
+    a = round(confint(var_fit, parm = c("mean")),2)
+    paste(media_text, "entre (", a[1],"e", a[2],") com 95% de confianca.")
   })
   
   output$resultadostable <- renderTable({
@@ -204,9 +225,9 @@ server <- function(input, output, session) {
     resultados_inputs()$Parametros
   })
   
-  output$cenariostable <- renderTable({
-    resultados_inputs()$Cenarios
-  })
+  # output$cenariostable <- renderTable({
+  #   resultados_inputs()$Cenarios
+  # })
   
   output$custostable <- renderTable({
     resultados_inputs()$Custos
