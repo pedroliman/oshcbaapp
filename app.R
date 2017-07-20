@@ -90,16 +90,27 @@ server <- function(input, output, session) {
     })
   
   # Parametros
-  parametros = reactive(
+  resultados_inputs = reactive(
     {
-      output_oshcba()$Parametros
+      output_oshcba()$Inputs
     })
-  # Parametros  
+  # Resultados CBR  
   resultados_cbr = reactive(
     {
       output_oshcba()$Resultados_CBR
     })
   
+  # Resultados
+  resultados = reactive(
+    {
+      output_oshcba()$Resultados
+    })
+  
+  # Resultados Descontados
+  resultados = reactive(
+    {
+      output_oshcba()$ResultadosDescontados
+    })
   
   # Iniciativas Simuladas: Este código provavelmente deveria ser implementado fora do layout
   iniciativas = reactive({
