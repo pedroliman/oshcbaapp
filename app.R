@@ -194,9 +194,109 @@ server <- function(input, output, session) {
       scale_colour_manual(name = 'Density', values = c('red', 'blue')) + 
       theme(legend.position = c(0.85, 0.85))
   })
+  output$beneficioturnover_plot = renderPlot({
+    dados = resultados_cbr() %>% filter(Cenario.y == input$Iniciativa) %>% select(Cenario.y, BeneficioTurnover)
+    var = dplyr::pull(dados[,3])
+    title = names(dados[,3])
+    qplot(var, geom = 'blank', main=title) +   
+      geom_line(aes(y = ..density.., colour = 'Empirical'), stat = 'density') + 
+      # stat_function(fun = dnorm, aes(colour = 'Normal')) +                       
+      geom_histogram(aes(y = ..density..), alpha = 0.7) +                        
+      scale_colour_manual(name = 'Density', values = c('red', 'blue')) + 
+      theme(legend.position = c(0.85, 0.85))
+  })
+  output$beneficiomultas_plot = renderPlot({
+    dados = resultados_cbr() %>% filter(Cenario.y == input$Iniciativa) %>% select(Cenario.y, BeneficioMultas)
+    var = dplyr::pull(dados[,3])
+    title = names(dados[,3])
+    qplot(var, geom = 'blank', main=title) +   
+      geom_line(aes(y = ..density.., colour = 'Empirical'), stat = 'density') + 
+      # stat_function(fun = dnorm, aes(colour = 'Normal')) +                       
+      geom_histogram(aes(y = ..density..), alpha = 0.7) +                        
+      scale_colour_manual(name = 'Density', values = c('red', 'blue')) + 
+      theme(legend.position = c(0.85, 0.85))
+  })
+  output$beneficioacoesregressivas_plot = renderPlot({
+    dados = resultados_cbr() %>% filter(Cenario.y == input$Iniciativa) %>% select(Cenario.y, BeneficioAcoesRegressivasINSS)
+    var = dplyr::pull(dados[,3])
+    title = names(dados[,3])
+    qplot(var, geom = 'blank', main=title) +   
+      geom_line(aes(y = ..density.., colour = 'Empirical'), stat = 'density') + 
+      # stat_function(fun = dnorm, aes(colour = 'Normal')) +                       
+      geom_histogram(aes(y = ..density..), alpha = 0.7) +                        
+      scale_colour_manual(name = 'Density', values = c('red', 'blue')) + 
+      theme(legend.position = c(0.85, 0.85))
+  })
+  output$beneficiototal_plot = renderPlot({
+    dados = resultados_cbr() %>% filter(Cenario.y == input$Iniciativa) %>% select(Cenario.y, BeneficioTotalCBR)
+    var = dplyr::pull(dados[,3])
+    title = names(dados[,3])
+    qplot(var, geom = 'blank', main=title) +   
+      geom_line(aes(y = ..density.., colour = 'Empirical'), stat = 'density') + 
+      # stat_function(fun = dnorm, aes(colour = 'Normal')) +                       
+      geom_histogram(aes(y = ..density..), alpha = 0.7) +                        
+      scale_colour_manual(name = 'Density', values = c('red', 'blue')) + 
+      theme(legend.position = c(0.85, 0.85))
+  })
+  output$razaocustobeneficio_plot = renderPlot({
+    dados = resultados_cbr() %>% filter(Cenario.y == input$Iniciativa) %>% select(Cenario.y, RazaoBeneficioCusto)
+    var = dplyr::pull(dados[,3])
+    title = names(dados[,3])
+    qplot(var, geom = 'blank', main=title) +   
+      geom_line(aes(y = ..density.., colour = 'Empirical'), stat = 'density') + 
+      # stat_function(fun = dnorm, aes(colour = 'Normal')) +                       
+      geom_histogram(aes(y = ..density..), alpha = 0.7) +                        
+      scale_colour_manual(name = 'Density', values = c('red', 'blue')) + 
+      theme(legend.position = c(0.85, 0.85))
+  })
 
   output$beneficioabsenteismo_confinttext = renderPrint({
     dados = resultados_cbr() %>% filter(Cenario.y == input$Iniciativa) %>% select(Cenario.y, BeneficioAbsenteismo)
+    var = dplyr::pull(dados[,3])
+    var_fit = fitdistrplus::fitdist(var,"norm")
+    var_medio = as.numeric(var_fit$estimate[["mean"]])
+    media_text = paste("Media = ", round(var_medio,2))
+    a = round(confint(var_fit, parm = c("mean")),2)
+    paste(media_text, "entre (", a[1],"e", a[2],") com 95% de confianca.")
+  })
+  output$beneficioturnover_confinttext = renderPrint({
+    dados = resultados_cbr() %>% filter(Cenario.y == input$Iniciativa) %>% select(Cenario.y, BeneficioTurnover)
+    var = dplyr::pull(dados[,3])
+    var_fit = fitdistrplus::fitdist(var,"norm")
+    var_medio = as.numeric(var_fit$estimate[["mean"]])
+    media_text = paste("Media = ", round(var_medio,2))
+    a = round(confint(var_fit, parm = c("mean")),2)
+    paste(media_text, "entre (", a[1],"e", a[2],") com 95% de confianca.")
+  })
+  output$beneficiomultas_confinttext = renderPrint({
+    dados = resultados_cbr() %>% filter(Cenario.y == input$Iniciativa) %>% select(Cenario.y, BeneficioMultas)
+    var = dplyr::pull(dados[,3])
+    var_fit = fitdistrplus::fitdist(var,"norm")
+    var_medio = as.numeric(var_fit$estimate[["mean"]])
+    media_text = paste("Media = ", round(var_medio,2))
+    a = round(confint(var_fit, parm = c("mean")),2)
+    paste(media_text, "entre (", a[1],"e", a[2],") com 95% de confianca.")
+  })
+  output$beneficioacoesregressivas_confinttext = renderPrint({
+    dados = resultados_cbr() %>% filter(Cenario.y == input$Iniciativa) %>% select(Cenario.y, BeneficioAcoesRegressivasINSS)
+    var = dplyr::pull(dados[,3])
+    var_fit = fitdistrplus::fitdist(var,"norm")
+    var_medio = as.numeric(var_fit$estimate[["mean"]])
+    media_text = paste("Media = ", round(var_medio,2))
+    a = round(confint(var_fit, parm = c("mean")),2)
+    paste(media_text, "entre (", a[1],"e", a[2],") com 95% de confianca.")
+  })
+  output$beneficiototal_confinttext = renderPrint({
+    dados = resultados_cbr() %>% filter(Cenario.y == input$Iniciativa) %>% select(Cenario.y, BeneficioTotalCBR)
+    var = dplyr::pull(dados[,3])
+    var_fit = fitdistrplus::fitdist(var,"norm")
+    var_medio = as.numeric(var_fit$estimate[["mean"]])
+    media_text = paste("Media = ", round(var_medio,2))
+    a = round(confint(var_fit, parm = c("mean")),2)
+    paste(media_text, "entre (", a[1],"e", a[2],") com 95% de confianca.")
+  })
+  output$razaocustobeneficio_confinttext = renderPrint({
+    dados = resultados_cbr() %>% filter(Cenario.y == input$Iniciativa) %>% select(Cenario.y, RazaoBeneficioCusto)
     var = dplyr::pull(dados[,3])
     var_fit = fitdistrplus::fitdist(var,"norm")
     var_medio = as.numeric(var_fit$estimate[["mean"]])
