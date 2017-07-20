@@ -5,6 +5,7 @@
 # library(devtools)
 # install_github("pedroliman/oshcba")
 library(shiny)
+library(shinythemes)
 library(oshcba)
 library(ggplot2)
 library(readxl)
@@ -18,9 +19,10 @@ set.seed(1000)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
+  theme = shinytheme("yeti"),
   
   # Application title
-  titlePanel("Calculadora de Custos e Beneficios SST - V. 0.0.2"),
+  titlePanel("Calculadora de Custos e Beneficios SST - V. 1.0.0"),
   
   # Sidebar with a slider input for number of bins
   sidebarLayout(
@@ -34,7 +36,7 @@ ui <- fluidPage(
     mainPanel(
       
       tabsetPanel(
-        tabPanel("Graficos",
+        tabPanel("INpu",
                  selectInput("Iniciativa", "Selecione a Iniciativa para exibir os Graficos",
                              c("Iniciativa1", "Iniciativa2", "Iniciativa3", "Iniciativa4", "Iniciatva5", "Iniciativa6", "Iniciativa7", "Iniciativa8", "Iniciativa9", "Iniciativa10", "TodasIniciativas")),
                  plotOutput("histograma_absenteismo")
