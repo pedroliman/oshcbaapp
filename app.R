@@ -20,31 +20,65 @@ set.seed(1000)
 # Define UI for application that draws a histogram
 ui <- fluidPage(
   theme = shinytheme("yeti"),
-  
-  # Application title
-  titlePanel("Calculadora de Custos e Beneficios SST - V. 1.0.0"),
-  
-  # Sidebar with a slider input for number of bins
-  sidebarLayout(
-    sidebarPanel(
-      "Faca Upload de seus dados de Input",
-      fileInput("Dados de Input",
-                inputId = "DadosInput",buttonLabel = "Arquivo.xlsx")
+  navbarPage(
+    # theme = "cerulean",  # <--- To use a theme, uncomment this
+    "Calculadora SST | FPS",
+    tabPanel("Inputs",
+             sidebarPanel(
+               "Faca Upload de seus dados de Input",
+                   fileInput("Dados de Input",
+                             inputId = "DadosInput",buttonLabel = "Arquivo.xlsx"),
+               "Apos informar os dados de inputs, verifique na guia ao lado se suas informacoes foram carregadas. Caso contrario, verifique se o arquivo de dados esta correto."
+             ),
+             mainPanel(
+               tabsetPanel(
+                 tabPanel("Configuracoes",
+                          tableOutput("configstable")
+                 ),
+                 tabPanel("Tab 2"),
+                 tabPanel("Tab 3")
+               )
+             )
     ),
-    
-    # Show a plot of the generated distribution
-    mainPanel(
-      
-      tabsetPanel(
-        tabPanel("INpu",
-                 selectInput("Iniciativa", "Selecione a Iniciativa para exibir os Graficos",
-                             c("Iniciativa1", "Iniciativa2", "Iniciativa3", "Iniciativa4", "Iniciatva5", "Iniciativa6", "Iniciativa7", "Iniciativa8", "Iniciativa9", "Iniciativa10", "TodasIniciativas")),
-                 plotOutput("histograma_absenteismo")
-                 ), 
-        tabPanel("Tabela de Resultados", tableOutput("table"), downloadButton('downloadData', 'Baixar Tabela de Resultados'))
-      )
+    tabPanel("Navbar 2",
+             sidebarPanel(
+               fileInput("file", "File input:")
+             ),
+             mainPanel(
+               tabsetPanel(
+                 tabPanel("Tab 1",
+                          h4("Table")
+                 ),
+                 tabPanel("Tab 2"),
+                 tabPanel("Tab 3")
+               )
+             )
     )
   )
+  # # Application title
+  # titlePanel("Calculadora de Custos e Beneficios SST - V. 1.0.0"),
+  # 
+  # # Sidebar with a slider input for number of bins
+  # sidebarLayout(
+  #   sidebarPanel(
+  #     "Faca Upload de seus dados de Input",
+  #     fileInput("Dados de Input",
+  #               inputId = "DadosInput",buttonLabel = "Arquivo.xlsx")
+  #   ),
+  #   
+  #   # Show a plot of the generated distribution
+  #   mainPanel(
+  #     
+  #     tabsetPanel(
+  #       tabPanel("INpu",
+  #                selectInput("Iniciativa", "Selecione a Iniciativa para exibir os Graficos",
+  #                            c("Iniciativa1", "Iniciativa2", "Iniciativa3", "Iniciativa4", "Iniciatva5", "Iniciativa6", "Iniciativa7", "Iniciativa8", "Iniciativa9", "Iniciativa10", "TodasIniciativas")),
+  #                plotOutput("histograma_absenteismo")
+  #                ), 
+  #       tabPanel("Tabela de Resultados", tableOutput("table"), downloadButton('downloadData', 'Baixar Tabela de Resultados'))
+  #     )
+  #   )
+  # )
 )
 
 # Define server logic required to draw a histogram
@@ -52,11 +86,9 @@ server <- function(input, output, session) {
   
   # Esta função apenas retorna o arquivo de Dados
   CarregaDados <- reactive({
-    
     validate(
       need(input$DadosInput != "", "Escolha o arquivo de simulacao de dados corretamente!")
     )
-    
     arquivodados <- input$DadosInput
     if (is.null(arquivodados))
       return(NULL)
@@ -67,11 +99,6 @@ server <- function(input, output, session) {
   
   # Esta função retorna a lista inputs
   inputs = reactive({
-    
-    validate(
-      need(CarregaDados() != "", "Escolha o arquivo de simulacao de dados corretamente!")
-    )
-    
     arquivoinputs = CarregaDados()
     # if (is.null(arquivoinputs))
     #   return(NULL)
@@ -80,8 +107,7 @@ server <- function(input, output, session) {
   })
   
   # Dados de Absenteismo simulados
-  output_oshcba = reactive(
-    {
+  output_oshcba = reactive({
       
       
       inputs = CarregaDados()
@@ -92,25 +118,21 @@ server <- function(input, output, session) {
     })
   
   # Parametros
-  resultados_inputs = reactive(
-    {
+  resultados_inputs = reactive({
       output_oshcba()$Inputs
     })
   # Resultados CBR  
-  resultados_cbr = reactive(
-    {
+  resultados_cbr = reactive({
       output_oshcba()$Resultados_CBR
     })
   
   # Resultados
-  resultados = reactive(
-    {
+  resultados = reactive({
       output_oshcba()$Resultados
     })
   
   # Resultados Descontados
-  resultados = reactive(
-    {
+  resultados = reactive({
       output_oshcba()$ResultadosDescontados
     })
   
@@ -131,9 +153,6 @@ server <- function(input, output, session) {
     if (!is.null(dados_simulados))
       dados_simulados = dados_simulados %>% filter(Cenario.y == input$Iniciativa) %>% select(Cenario.y, BeneficioAbsenteismo, BeneficioTurnover, BeneficioMultas, BeneficioAcoesRegressivasINSS
                                                                                              , BeneficioTotalCBR, RazaoBeneficioCusto)
-
-    
-      
       #dados_simulados = dados_simulados %>% filter(Cenario == input$Iniciativa) %>% select(Cenario, NFaltas, Nev_Afmenor15_Tipico, Nev_Afmaior15_Tipico, Nev_Safast_Tipico, Nev_Obito_Tipico, Nev_Afmenor15_Trajeto, Nev_Afmaior15_Trajeto, Nev_Safast_Trajeto, Nev_Obito_Trajeto, Nev_Afmenor15_DoenOcup, Nev_Afmaior15_DoenOcup, Nev_Safast_DoenOcup, Nev_Obito_DoenOcup, Nev_Afmenor15_NRelac, Nev_Afmaior15_NRelac, Nev_Safast_NRelac, Nev_Obito_NRelac, DespesaTurnover, NSubstituidos, DiasAbsenteismo, DespesaAbsenteismo, DespesaMultas, NumeroMultas_Lei1, DespesaAcoesRegressivasINSS, AcoesRegressivasINSS, Nev_AcaoRegressivaINSSAcumulado, Nev_AcaoRegressivaINSS)
 
     ggplot(data = melt(dados_simulados), mapping = aes(x = value)) + 
@@ -147,6 +166,10 @@ server <- function(input, output, session) {
     head(resultados_cbr(),n = 100)
   })
   
+  output$configstable <- renderTable({
+    resultados_inputs()$Configs
+  })
+  
   output$completetable <- renderTable({
     resultados_cbr()
   })
@@ -154,7 +177,6 @@ server <- function(input, output, session) {
   output$downloadData <- downloadHandler(
     filename = function() { paste("output_simulacao", '.csv', sep='') },
     content = function(file) {
-      #write.csv(datasetInput(), file)
       write.table(resultados_cbr(),file,sep=";",dec=",",row.names = FALSE)
     }
   )
