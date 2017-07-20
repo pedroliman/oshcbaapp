@@ -74,7 +74,7 @@ ui <- fluidPage(
                                                                   c("Iniciativa1", "Iniciativa2", "Iniciativa3", "Iniciativa4", "Iniciatva5", "Iniciativa6", "Iniciativa7", "Iniciativa8", "Iniciativa9", "Iniciativa10", "TodasIniciativas")
                                       ),
                           fluidRow(
-                              column(6,
+                              column(8,
                                      plotOutput("beneficioabsenteismo_plot"),
                                      verbatimTextOutput("beneficioabsenteismo_confinttext"),
                                      plotOutput("beneficioturnover_plot"),
@@ -82,7 +82,7 @@ ui <- fluidPage(
                                      plotOutput("beneficiomultas_plot"),
                                      verbatimTextOutput("beneficiomultas_confinttext")
                                      ),
-                              column(6,
+                              column(8,
                                      plotOutput("beneficioacoesregressivas_plot"),
                                      verbatimTextOutput("beneficioacoesregressivas_confinttext"),
                                      plotOutput("beneficiototal_plot"),
@@ -92,7 +92,6 @@ ui <- fluidPage(
                                      )
                             )
 
-                          # tableOutput("resultados_descontadostable")
                  )
                )
              )
@@ -155,33 +154,6 @@ server <- function(input, output, session) {
   resultados_descontados = reactive({
       output_oshcba()$Resultados_Descontados
     })
-  
-  # Iniciativas Simuladas: Este código provavelmente deveria ser implementado fora do layout
-  # iniciativas = reactive({
-  #   inputs = inputs()
-  #   if (is.null(inputs))
-  #     return(NULL)
-  #   iniciativas = obter_cenarios(inputs) %>%
-  #     filter(!CenarioASIS) %>%
-  #     select(Cenario)
-  #   iniciativas = as.vector(t(iniciativas))
-  #   return(iniciativas)
-  # })
-  
-  # output$histogramas <- renderPlot({
-  #   dados_simulados = resultados_cbr()
-  #   if (!is.null(dados_simulados))
-  #     dados_simulados = dados_simulados %>% filter(Cenario.y == input$Iniciativa) %>% select(Cenario.y, BeneficioAbsenteismo, BeneficioTurnover, BeneficioMultas, BeneficioAcoesRegressivasINSS
-  #                                                                                            , BeneficioTotalCBR, RazaoBeneficioCusto)
-  #     #dados_simulados = dados_simulados %>% filter(Cenario == input$Iniciativa) %>% select(Cenario, NFaltas, Nev_Afmenor15_Tipico, Nev_Afmaior15_Tipico, Nev_Safast_Tipico, Nev_Obito_Tipico, Nev_Afmenor15_Trajeto, Nev_Afmaior15_Trajeto, Nev_Safast_Trajeto, Nev_Obito_Trajeto, Nev_Afmenor15_DoenOcup, Nev_Afmaior15_DoenOcup, Nev_Safast_DoenOcup, Nev_Obito_DoenOcup, Nev_Afmenor15_NRelac, Nev_Afmaior15_NRelac, Nev_Safast_NRelac, Nev_Obito_NRelac, DespesaTurnover, NSubstituidos, DiasAbsenteismo, DespesaAbsenteismo, DespesaMultas, NumeroMultas_Lei1, DespesaAcoesRegressivasINSS, AcoesRegressivasINSS, Nev_AcaoRegressivaINSSAcumulado, Nev_AcaoRegressivaINSS)
-  # 
-  #   ggplot(data = melt(dados_simulados), mapping = aes(x = value)) + 
-  #     geom_histogram(bins = 15) + facet_wrap(~variable, scales = 'free_x')
-  #   
-  #   # qplot(dados_simulados$RazaoBeneficioCusto,geom = "histogram",
-  #   #       main="Histograma de Despesas em Absenteismo")
-  # })
-  
   
   output$beneficioabsenteismo_plot = renderPlot({
     dados = resultados_cbr() %>% filter(Cenario.y == input$Iniciativa) %>% select(Cenario.y, BeneficioAbsenteismo)
