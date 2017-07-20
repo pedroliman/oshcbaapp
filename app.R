@@ -50,6 +50,11 @@ server <- function(input, output, session) {
   
   # Esta função apenas retorna o arquivo de Dados
   CarregaDados <- reactive({
+    
+    validate(
+      need(input$DadosInput != "", "Escolha o arquivo de simulacao de dados corretamente!")
+    )
+    
     arquivodados <- input$DadosInput
     if (is.null(arquivodados))
       return(NULL)
@@ -60,21 +65,39 @@ server <- function(input, output, session) {
   
   # Esta função retorna a lista inputs
   inputs = reactive({
+    
+    validate(
+      need(CarregaDados() != "", "Escolha o arquivo de simulacao de dados corretamente!")
+    )
+    
     arquivoinputs = CarregaDados()
-    if (is.null(arquivoinputs))
-      return(NULL)
-    inputs = carregar_inputs(arquivoinputs)
+    # if (is.null(arquivoinputs))
+    #   return(NULL)
+    # inputs = carregar_inputs(arquivoinputs)
     return(carregar_inputs(inputs))
   })
   
   # Dados de Absenteismo simulados
-  dados_simulados = reactive(
+  output_oshcba = reactive(
     {
+      
+      
       inputs = CarregaDados()
       if (is.null(inputs))
         return(NULL)
-      dados = simular_temp_absenteismo(paste(inputs$datapath, ".xlsx", sep=""))
+      dados = simular_cba(paste(inputs$datapath, ".xlsx", sep=""), modo = "completo")
       return(dados)
+    })
+  
+  # Parametros
+  parametros = reactive(
+    {
+      output_oshcba()$Parametros
+    })
+  # Parametros  
+  resultados_cbr = reactive(
+    {
+      output_oshcba()$Resultados_CBR
     })
   
   
@@ -91,9 +114,14 @@ server <- function(input, output, session) {
   })
   
   output$histograma_absenteismo <- renderPlot({
-    dados_simulados = dados_simulados()
+    dados_simulados = resultados_cbr()
     if (!is.null(dados_simulados))
-      dados_simulados = dados_simulados %>% filter(Cenario.y == input$Iniciativa) %>% select(Cenario.y, BeneficioAbsenteismo, BeneficioTotalCBR, RazaoBeneficioCusto)
+      dados_simulados = dados_simulados %>% filter(Cenario.y == input$Iniciativa) %>% select(Cenario.y, BeneficioAbsenteismo, BeneficioTurnover, BeneficioMultas, BeneficioAcoesRegressivasINSS
+                                                                                             , BeneficioTotalCBR, RazaoBeneficioCusto)
+
+    
+      
+      #dados_simulados = dados_simulados %>% filter(Cenario == input$Iniciativa) %>% select(Cenario, NFaltas, Nev_Afmenor15_Tipico, Nev_Afmaior15_Tipico, Nev_Safast_Tipico, Nev_Obito_Tipico, Nev_Afmenor15_Trajeto, Nev_Afmaior15_Trajeto, Nev_Safast_Trajeto, Nev_Obito_Trajeto, Nev_Afmenor15_DoenOcup, Nev_Afmaior15_DoenOcup, Nev_Safast_DoenOcup, Nev_Obito_DoenOcup, Nev_Afmenor15_NRelac, Nev_Afmaior15_NRelac, Nev_Safast_NRelac, Nev_Obito_NRelac, DespesaTurnover, NSubstituidos, DiasAbsenteismo, DespesaAbsenteismo, DespesaMultas, NumeroMultas_Lei1, DespesaAcoesRegressivasINSS, AcoesRegressivasINSS, Nev_AcaoRegressivaINSSAcumulado, Nev_AcaoRegressivaINSS)
 
     ggplot(data = melt(dados_simulados), mapping = aes(x = value)) + 
       geom_histogram(bins = 15) + facet_wrap(~variable, scales = 'free_x')
@@ -103,18 +131,18 @@ server <- function(input, output, session) {
   })
   
   output$table <- renderTable({
-    head(dados_simulados(),n = 100)
+    head(resultados_cbr(),n = 100)
   })
   
   output$completetable <- renderTable({
-    dados_simulados()
+    resultados_cbr()
   })
   
   output$downloadData <- downloadHandler(
     filename = function() { paste("output_simulacao", '.csv', sep='') },
     content = function(file) {
       #write.csv(datasetInput(), file)
-      write.table(dados_simulados(),file,sep=";",dec=",",row.names = FALSE)
+      write.table(resultados_cbr(),file,sep=";",dec=",",row.names = FALSE)
     }
   )
   
