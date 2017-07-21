@@ -1,7 +1,21 @@
 # Plots
 
-resultados_cbr = resultados$Resultados_CBR
+library(oshcba)
+library(ggplot2)
+library(dplyr)
 
+cba = simular_cba("./Dados.xlsx", modo = "completo")
+
+resultados_cbr = cba$Resultados_CBR
+
+resultados = cba$Resultados_Descontados
+
+ggplot(data = resultados,
+       aes(
+         x = resultados$Replicacao, 
+         y = DespesaTurnover, 
+         color = Cenario)) + 
+  geom_point()
 
 dados = resultados_cbr %>% filter(Cenario.y == "Iniciativa1") %>% select(Cenario.y, BeneficioAbsenteismo)
 
@@ -18,9 +32,12 @@ qplot(var, geom = 'blank', main=title) +
 
 var_fit = fitdistrplus::fitdist(var,"norm")
 var_medio = as.numeric(var_fit$estimate[["mean"]])
-media_text = paste("Media = ", round(var_medio,2))
-a = round(confint(var_fit, parm = c("mean")),2)
-paste(media_text, "entre (", a[1],"e", a[2],") com 95% de confianca.")
+
+
+
+media_text = paste("Média = ", round(mean(var),2))
+a = round(quantile(var, c(0.0275, 0.975)),2)
+paste(media_text, "entre (", a[1],"e", a[2],") em 95% dos casos.")
 
 
 

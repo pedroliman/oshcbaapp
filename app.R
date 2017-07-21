@@ -4,7 +4,6 @@
 #Se precisar atualizaro app, rode este comando:
 # library(devtools)
 # install_github("pedroliman/oshcba")
-library(fitdistrplus)
 library(shiny)
 library(shinythemes)
 library(oshcba)
@@ -148,6 +147,13 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
   
+  mean_third_var = function(dados){
+    var = dplyr::pull(dados[,3])
+    media_text = paste("Média = ", round(mean(var),2))
+    a = round(quantile(var, c(0.0275, 0.975)),2)
+    paste(media_text, "entre (", a[1],"e", a[2],") em 95% dos casos.")
+  }
+  
   # Esta função apenas retorna o arquivo de Dados
   CarregaDados <- reactive({
     validate(
@@ -269,57 +275,27 @@ server <- function(input, output, session) {
 
   output$beneficioabsenteismo_confinttext = renderPrint({
     dados = resultados_cbr() %>% filter(Cenario.y == input$Iniciativa) %>% select(Cenario.y, BeneficioAbsenteismo)
-    var = dplyr::pull(dados[,3])
-    var_fit = fitdistrplus::fitdist(var,"norm")
-    var_medio = as.numeric(var_fit$estimate[["mean"]])
-    media_text = paste("Media = ", round(var_medio,2))
-    a = round(confint(var_fit, parm = c("mean")),2)
-    paste(media_text, "entre (", a[1],"e", a[2],") com 95% de confianca.")
+    mean_third_var(dados)
   })
   output$beneficioturnover_confinttext = renderPrint({
     dados = resultados_cbr() %>% filter(Cenario.y == input$Iniciativa) %>% select(Cenario.y, BeneficioTurnover)
-    var = dplyr::pull(dados[,3])
-    var_fit = fitdistrplus::fitdist(var,"norm")
-    var_medio = as.numeric(var_fit$estimate[["mean"]])
-    media_text = paste("Media = ", round(var_medio,2))
-    a = round(confint(var_fit, parm = c("mean")),2)
-    paste(media_text, "entre (", a[1],"e", a[2],") com 95% de confianca.")
+    mean_third_var(dados)
   })
   output$beneficiomultas_confinttext = renderPrint({
     dados = resultados_cbr() %>% filter(Cenario.y == input$Iniciativa) %>% select(Cenario.y, BeneficioMultas)
-    var = dplyr::pull(dados[,3])
-    var_fit = fitdistrplus::fitdist(var,"norm")
-    var_medio = as.numeric(var_fit$estimate[["mean"]])
-    media_text = paste("Media = ", round(var_medio,2))
-    a = round(confint(var_fit, parm = c("mean")),2)
-    paste(media_text, "entre (", a[1],"e", a[2],") com 95% de confianca.")
+    mean_third_var(dados)
   })
   output$beneficioacoesregressivas_confinttext = renderPrint({
     dados = resultados_cbr() %>% filter(Cenario.y == input$Iniciativa) %>% select(Cenario.y, BeneficioAcoesRegressivasINSS)
-    var = dplyr::pull(dados[,3])
-    var_fit = fitdistrplus::fitdist(var,"norm")
-    var_medio = as.numeric(var_fit$estimate[["mean"]])
-    media_text = paste("Media = ", round(var_medio,2))
-    a = round(confint(var_fit, parm = c("mean")),2)
-    paste(media_text, "entre (", a[1],"e", a[2],") com 95% de confianca.")
+    mean_third_var(dados)
   })
   output$beneficiototal_confinttext = renderPrint({
     dados = resultados_cbr() %>% filter(Cenario.y == input$Iniciativa) %>% select(Cenario.y, BeneficioTotalCBR)
-    var = dplyr::pull(dados[,3])
-    var_fit = fitdistrplus::fitdist(var,"norm")
-    var_medio = as.numeric(var_fit$estimate[["mean"]])
-    media_text = paste("Media = ", round(var_medio,2))
-    a = round(confint(var_fit, parm = c("mean")),2)
-    paste(media_text, "entre (", a[1],"e", a[2],") com 95% de confianca.")
+    mean_third_var(dados)
   })
   output$razaocustobeneficio_confinttext = renderPrint({
     dados = resultados_cbr() %>% filter(Cenario.y == input$Iniciativa) %>% select(Cenario.y, RazaoBeneficioCusto)
-    var = dplyr::pull(dados[,3])
-    var_fit = fitdistrplus::fitdist(var,"norm")
-    var_medio = as.numeric(var_fit$estimate[["mean"]])
-    media_text = paste("Media = ", round(var_medio,2))
-    a = round(confint(var_fit, parm = c("mean")),2)
-    paste(media_text, "entre (", a[1],"e", a[2],") com 95% de confianca.")
+    mean_third_var(dados)
   })
   
   output$resultadostable <- renderTable({
