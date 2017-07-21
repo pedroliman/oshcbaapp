@@ -24,7 +24,7 @@ ui <- fluidPage(
   theme = shinytheme("yeti"),
   navbarPage(
     # theme = "cerulean",  # <--- To use a theme, uncomment this
-    "Calculadora SST | FPS",
+    "Calculadora SST | FPS",fluid = TRUE,
     tabPanel("Inputs",
              sidebarPanel(
                "Faca Upload de seus dados de Input",
@@ -58,39 +58,84 @@ ui <- fluidPage(
                tabPanel("Resultados da Análise de Custo Beneficio",
                         "Mostrando primeiras 100 linhas dos resultados",
                         tableOutput("resultados_cbrtable")
-                        ),
-               tabPanel("Console",
-                        verbatimTextOutput("consoletext")
-               )
+                        )
               )
              )
              ),
     tabPanel("Resultados",
              "Esta aba apresenta resultados da simulacao. Use esta aba para verificar os dados simulados.",
-             mainPanel(
+             mainPanel(width = 12,
                tabsetPanel(
                  tabPanel("Resultados Gerais",
                           selectInput("Iniciativa", "Selecione a Iniciativa para exibir os Graficos",
                                                                   c("Iniciativa1", "Iniciativa2", "Iniciativa3", "Iniciativa4", "Iniciatva5", "Iniciativa6", "Iniciativa7", "Iniciativa8", "Iniciativa9", "Iniciativa10", "TodasIniciativas")
                                       ),
                           fluidRow(
-                              column(8,
-                                     plotOutput("beneficioabsenteismo_plot"),
-                                     verbatimTextOutput("beneficioabsenteismo_confinttext"),
-                                     plotOutput("beneficioturnover_plot"),
-                                     verbatimTextOutput("beneficioturnover_confinttext"),
-                                     plotOutput("beneficiomultas_plot"),
-                                     verbatimTextOutput("beneficiomultas_confinttext")
-                                     ),
-                              column(8,
-                                     plotOutput("beneficioacoesregressivas_plot"),
-                                     verbatimTextOutput("beneficioacoesregressivas_confinttext"),
-                                     plotOutput("beneficiototal_plot"),
-                                     verbatimTextOutput("beneficiototal_confinttext"),
-                                     plotOutput("razaocustobeneficio_plot"),
-                                     verbatimTextOutput("razaocustobeneficio_confinttext")
-                                     )
+                            column(6,
+                                   h1("Razão Benefício Custo"),
+                                   "Observe ao lado a razão benefício Custo no Cenário selecionado."
+                            ),
+                            column(6,
+                                   plotOutput("razaocustobeneficio_plot"),
+                                   verbatimTextOutput("razaocustobeneficio_confinttext")
                             )
+                          ),
+                          fluidRow(
+                            column(6,
+                                   h1("Benefício Total"),
+                                   "Observe ao lado a o Benefício Total da Iniciativa. Compare este valor ao custo da Iniciativa."
+                            ),
+                            column(6,
+                                   plotOutput("beneficiototal_plot"),
+                                   verbatimTextOutput("beneficiototal_confinttext")
+                            )
+                          ),
+                          fluidRow(
+                            column(6,
+                                   h1("Retorno Direto"),
+                                   "Esta categoria compreende a economia de recursos monetários que a empresa deixa de observar devido ao não atendimento à legislação e ocorrência de acidentes de trabalho.",
+                                   h2("Exposição à Multas"),
+                                   "Esta subcategoria compreende a economia de recursos monetários que empresa pode obter ao reduzir os riscos de não atendimento à legislação (NRs)."
+                                   ),
+                            column(6,
+                                  plotOutput("beneficiomultas_plot"),
+                                  verbatimTextOutput("beneficiomultas_confinttext")
+                                  )
+                                  ),
+                          fluidRow(
+                            column(6,
+                                   h1("Despesas Evitáveis"),
+                                   "Esta categoria compreende a economia de recursos monetários que deixaram de ser gastos pela empresa para remediar as despesas com as consequências dos problemas de SST e FPS (diretos e indiretos, tangíveis e intangíveis). As despesas evitadas sempre são observadas a partir da comparação das despesas antes e depois da implementação da iniciativa.",
+                                   h2("Ações Regressivas"),
+                                   "Esta subcategoria compreende as despesas evitadas com ações regressivas do INSS após a implementação integral da iniciativa."
+                            ),
+                            column(6,
+                                   plotOutput("beneficioacoesregressivas_plot"),
+                                   verbatimTextOutput("beneficioacoesregressivas_confinttext")
+                            )
+                          ),
+                          fluidRow(
+                            column(6,
+                                   h1("Melhor Uso dos Recursos"),
+                                   "Esta categoria compreende os ganhos que a empresa obtém com o melhor uso dos recursos (equipamentos, materiais, insumos e mão-de-obra) quando operando em um ambiente seguro e saudável.",
+                                   h2("Turnover"),
+                                   "Esta subcategoria compreende as despesas evitadas com a redução da taxa de rotatividade da mão-de-obra após a implementação da iniciativa  em SST e FPS. As variáveis contempladas referem à redução das despesas de recursos humanos e demais áreas de apoio (estrutura, capacitação novos trabalhadores, mobilização e integração de novos trabalhadores, outros)."
+                            ),
+                            column(6,
+                                   plotOutput("beneficioturnover_plot"),
+                                   verbatimTextOutput("beneficioacoturnover_confinttext")
+                            )
+                          ),
+                          fluidRow(
+                            column(6,
+                                   h2("Absenteísmo"),
+                                   "Esta subcategoria compreende as despesas evitadas com a redução da taxa de absenteísmo da mão-de-obra após a implementação da iniciativa  em SST e FPS. As variáveis contempladas referem à redução das despesas com tempo de realocação de trabalhadores, horas extras necessárias para suprir as carências de mão-de-obra nas operações, entre outras."
+                            ),
+                            column(6,
+                                   plotOutput("beneficioabsenteismo_plot"),
+                                   verbatimTextOutput("beneficioabsenteismo_confinttext")
+                            )
+                          )
 
                  )
                )
