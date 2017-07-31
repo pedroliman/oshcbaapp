@@ -3,9 +3,9 @@ title: oshcbaapp
 account: pedrolima
 server: shinyapps.io
 appId: 198582
-bundleId: 911292
+bundleId: 912531
 url: https://pedrolima.shinyapps.io/oshcbaapp/
-when: 1500649639.03255
+when: 1500809724.77684
 asMultiple: FALSE
 asStatic: FALSE
 ignoredFiles: .gitattributes|.RData|Dados.xlsx|LICENSE|README.md|setup.R|teste.R|tests.R|absenteismo/app.R|absenteismo/rsconnect/shinyapps.io/pedrolima/absenteismo.dcf
