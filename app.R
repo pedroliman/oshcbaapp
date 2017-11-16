@@ -16,7 +16,7 @@ library(purrr)
 
 
 ### Definindo uma seed fixa fora do app para ter replicações mehor comparáveis.
-set.seed(1000)
+# set.seed(1000)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
